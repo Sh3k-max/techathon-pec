@@ -1,0 +1,254 @@
+front end
+
+import 'package:flutter/material.dart';
+import 'package:healthcare_app/screens/login_screen.dart';
+import 'package:healthcare_app/screens/appointment_screen.dart';
+import 'package:healthcare_app/screens/medication_reminder_screen.dart';
+
+void main() {
+  runApp(HealthcareApp());
+}
+
+class HealthcareApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Healthcare App',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+      ),
+      home: LoginScreen(),
+      routes: {
+        '/login': (context) => LoginScreen(),
+        '/appointments': (context) => AppointmentScreen(),
+        '/reminders': (context) => MedicationReminderScreen(),
+      },
+    );
+  }
+}
+
+
+
+
+This screen allows the user to log in to the app. It sends the credentials to the backend for authentication.
+
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class LoginScreen extends StatefulWidget {
+  @override
+  _LoginScreenState createState() => _LoginScreenState();
+}
+
+class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  String _errorMessage = '';
+
+  Future<void> _login() async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/login'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'email': _emailController.text,
+        'password': _passwordController.text,
+      }),
+    );
+
+    if (response.statusCode == 200) {
+      Navigator.pushNamed(context, '/appointments');
+    } else {
+      setState(() {
+        _errorMessage = 'Invalid credentials. Please try again.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Login'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _emailController,
+              decoration: InputDecoration(labelText: 'Email'),
+            ),
+            TextField(
+              controller: _passwordController,
+              decoration: InputDecoration(labelText: 'Password'),
+              obscureText: true,
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _login,
+              child: Text('Login'),
+            ),
+            SizedBox(height: 20),
+            Text(_errorMessage, style: TextStyle(color: Colors.red)),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+
+This screen allows users to schedule an appointment with a doctor.
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class AppointmentScreen extends StatefulWidget {
+  @override
+  _AppointmentScreenState createState() => _AppointmentScreenState();
+}
+
+class _AppointmentScreenState extends State<AppointmentScreen> {
+  final _doctorIdController = TextEditingController();
+  final _datetimeController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  String _message = '';
+
+  Future<void> _scheduleAppointment() async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/schedule_appointment'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'doctor_id': _doctorIdController.text,
+        'datetime': _datetimeController.text,
+        'description': _descriptionController.text,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      setState(() {
+        _message = 'Appointment scheduled successfully!';
+      });
+    } else {
+      setState(() {
+        _message = 'Failed to schedule appointment.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Schedule Appointment'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _doctorIdController,
+              decoration: InputDecoration(labelText: 'Doctor ID'),
+            ),
+            TextField(
+              controller: _datetimeController,
+              decoration: InputDecoration(labelText: 'Date & Time (YYYY-MM-DD HH:MM:SS)'),
+            ),
+            TextField(
+              controller: _descriptionController,
+              decoration: InputDecoration(labelText: 'Description'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _scheduleAppointment,
+              child: Text('Schedule Appointment'),
+            ),
+            SizedBox(height: 20),
+            Text(_message),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+
+
+import 'package:flutter/material.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
+
+class MedicationReminderScreen extends StatefulWidget {
+  @override
+  _MedicationReminderScreenState createState() => _MedicationReminderScreenState();
+}
+
+class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
+  final _medicationController = TextEditingController();
+  final _timeController = TextEditingController();
+  final _phoneController = TextEditingController();
+  String _message = '';
+
+  Future<void> _setReminder() async {
+    final response = await http.post(
+      Uri.parse('http://127.0.0.1:5000/medication_reminder'),
+      headers: {'Content-Type': 'application/json'},
+      body: jsonEncode({
+        'medication_name': _medicationController.text,
+        'time': _timeController.text,
+        'phone_number': _phoneController.text,
+      }),
+    );
+
+    if (response.statusCode == 201) {
+      setState(() {
+        _message = 'Medication reminder set!';
+      });
+    } else {
+      setState(() {
+        _message = 'Failed to set reminder.';
+      });
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Set Medication Reminder'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Column(
+          children: [
+            TextField(
+              controller: _medicationController,
+              decoration: InputDecoration(labelText: 'Medication Name'),
+            ),
+            TextField(
+              controller: _timeController,
+              decoration: InputDecoration(labelText: 'Reminder Time (HH:MM)'),
+            ),
+            TextField(
+              controller: _phoneController,
+              decoration: InputDecoration(labelText: 'Phone Number'),
+            ),
+            SizedBox(height: 20),
+            ElevatedButton(
+              onPressed: _setReminder,
+              child: Text('Set Reminder'),
+            ),
+            SizedBox(height: 20),
+            Text(_message),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
