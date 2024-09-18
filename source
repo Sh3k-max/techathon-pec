@@ -1,254 +1,409 @@
 front end
+index.html
 
-import 'package:flutter/material.dart';
-import 'package:healthcare_app/screens/login_screen.dart';
-import 'package:healthcare_app/screens/appointment_screen.dart';
-import 'package:healthcare_app/screens/medication_reminder_screen.dart';
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Engagement App</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <h1 id="appTitle">Patient Engagement App</h1>
 
-void main() {
-  runApp(HealthcareApp());
+        <div id="loginView" class="view">
+            <form id="loginForm">
+                <div class="form-group">
+                    <label for="username">Username or Email</label>
+                    <input type="text" id="username" required>
+                </div>
+                <div class="form-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" required>
+                </div>
+                <button type="submit">Login</button>
+                <p class="error" id="loginError"></p>
+                <p>Don't have an account? <a href="#" id="showSignup">Sign up here</a></p>
+            </form>
+        </div>
+
+        <div id="signupView" class="view" style="display: none;">
+            <form id="signupForm">
+                <div class="form-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" required>
+                </div>
+                <div class="form-group">
+                    <label for="newUsername">Username</label>
+                    <input type="text" id="newUsername" required>
+                </div>
+                <div class="form-group">
+                    <label for="newPassword">Password</label>
+                    <input type="password" id="newPassword" required>
+                </div>
+                <button type="submit">Sign Up</button>
+                <p class="success" id="signupSuccess"></p>
+                <p class="error" id="signupError"></p>
+                <p>Already have an account? <a href="#" id="showLogin">Login here</a></p>
+            </form>
+        </div>
+
+        <div id="dashboardView" class="view" style="display: none;">
+            <div class="sidebar">
+                <h2>Navigation</h2>
+                <button class="tablink active" onclick="openTab(event, 'ContactDoctors')">Contact Doctors</button>
+                <button class="tablink" onclick="openTab(event, 'CreateAppointment')">Create Appointment</button>
+                <button class="tablink" onclick="openTab(event, 'MedicalRecords')">Medical Records</button>
+            </div>
+
+            <div class="main-content">
+                <div id="ContactDoctors" class="tabcontent active">
+                    <h2>Contact Doctors</h2>
+                    <form id="contactForm">
+                        <div class="form-group">
+                            <label for="doctorName">Doctor's Name</label>
+                            <input type="text" id="doctorName" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="message">Message</label>
+                            <textarea id="message" required></textarea>
+                        </div>
+                        <button type="submit">Send Message</button>
+                    </form>
+                    <p class="success" id="contactSuccess"></p>
+                    <p class="error" id="contactError"></p>
+                </div>
+
+                <div id="CreateAppointment" class="tabcontent">
+                    <h2>Create Appointment</h2>
+                    <form id="appointmentForm">
+                        <div class="form-group">
+                            <label for="appointmentDate">Date</label>
+                            <input type="date" id="appointmentDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label for="appointmentTime">Time</label>
+                            <input type="time" id="appointmentTime" required>
+                        </div>
+                        <button type="submit">Create Appointment</button>
+                    </form>
+                    <p class="success" id="appointmentSuccess"></p>
+                    <p class="error" id="appointmentError"></p>
+                </div>
+
+                <div id="MedicalRecords" class="tabcontent">
+                    <h2>Medical Records</h2>
+                    <p>Your medical records will be displayed here.</p>
+                    <ul id="recordsList">
+                        <li>Record 1: Routine Checkup - 2024-01-15</li>
+                        <li>Record 2: Blood Test - 2024-03-22</li>
+                    </ul>
+                </div>
+            </div>
+
+            <button id="logoutButton">Logout</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
+
+styles.css
+
+body {
+    font-family: Arial, sans-serif;
+    background-color: #e9ecef;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh; /* Full viewport height */
 }
 
-class HealthcareApp extends StatelessWidget {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Healthcare App',
-      theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
-      home: LoginScreen(),
-      routes: {
-        '/login': (context) => LoginScreen(),
-        '/appointments': (context) => AppointmentScreen(),
-        '/reminders': (context) => MedicationReminderScreen(),
-      },
-    );
-  }
+.container {
+    width: 100%;
+    max-width: 400px; /* Increased width for better form size */
+    padding: 20px;
+    background: #ffffff;
+    border-radius: 8px;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
 }
 
-
-
-
-This screen allows the user to log in to the app. It sends the credentials to the backend for authentication.
-
-
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class LoginScreen extends StatefulWidget {
-  @override
-  _LoginScreenState createState() => _LoginScreenState();
+h1 {
+    text-align: center;
+    color: #333;
 }
 
-class _LoginScreenState extends State<LoginScreen> {
-  final _emailController = TextEditingController();
-  final _passwordController = TextEditingController();
-  String _errorMessage = '';
+.view {
+    display: none;
+}
 
-  Future<void> _login() async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/login'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'email': _emailController.text,
-        'password': _passwordController.text,
-      }),
-    );
+.view.active {
+    display: block;
+}
 
-    if (response.statusCode == 200) {
-      Navigator.pushNamed(context, '/appointments');
-    } else {
-      setState(() {
-        _errorMessage = 'Invalid credentials. Please try again.';
-      });
+.form-group {
+    margin-bottom: 15px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    color: #555;
+}
+
+input, textarea {
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    width: 100%;
+    padding: 10px;
+    background-color: #28a745;
+    border: none;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+button:hover {
+    background-color: #218838;
+}
+
+.error {
+    color: red;
+    text-align: center;
+}
+
+.success {
+    color: green;
+    text-align: center;
+}
+
+.sidebar {
+    width: 250px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border-right: 1px solid #dee2e6;
+}
+
+.main-content {
+    flex: 1;
+    padding: 20px;
+}
+
+.tablink {
+    flex: 1;
+    padding: 10px;
+    background-color: #f1f1f1;
+    border: none;
+    cursor: pointer;
+}
+
+.tablink.active {
+    background-color: #28a745;
+    color: white;
+}
+
+.tabcontent {
+    display: none;// Show login view by default
+document.getElementById('loginView').style.display = 'block';
+
+// Show signup view
+document.getElementById('showSignup').addEventListener('click', function(event) {
+    event.preventDefault();
+    document.getElementById('loginView').style.display = 'none';
+    document.getElementById('signupView').style.display = 'block';
+});
+
+// Show login view
+document.getElementById('showLogin').addEventListener('click', function(event) {
+    event.preventDefault();
+    document.getElementById('signupView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'block';
+});
+
+// Handle login form submission
+document.getElementById('loginForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const username = document.getElementById('username').value;
+    const password = document.getElementById('password').value;
+
+    fetch('http://localhost:3000/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username, password }),
+    })
+    .then(response => {
+        if (response.ok) {
+            document.getElementById('loginView').style.display = 'none';
+            document.getElementById('dashboardView').style.display = 'block';
+            openTab(event, 'ContactDoctors'); // Open the contact doctors tab by default
+        } else {
+            document.getElementById('loginError').innerText = 'Invalid credentials, please try again.';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+// Handle signup form submission
+document.getElementById('signupForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const email = document.getElementById('email').value;
+    const newUsername = document.getElementById('newUsername').value;
+    const newPassword = document.getElementById('newPassword').value;
+
+    fetch('http://localhost:3000/signup', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ email, username: newUsername, password: newPassword }),
+    })
+    .then(response => {
+        if (response.ok) {
+            document.getElementById('signupSuccess').innerText = 'Account created successfully! You can now log in.';
+            document.getElementById('signupForm').reset();
+        } else {
+            document.getElementById('signupError').innerText = 'Error creating account. Please try again.';
+        }
+    })
+    .catch(error => {
+        console.error('Error:', error);
+    });
+});
+
+// Handle contact form submission
+document.getElementById('contactForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const doctorName = document.getElementById('doctorName').value;
+    const message = document.getElementById('message').value;
+
+    // Replace with your actual API call to send the message
+    console.log(`Message sent to ${doctorName}: ${message}`);
+    document.getElementById('contactSuccess').innerText = 'Message sent successfully!';
+});
+
+// Handle appointment form submission
+document.getElementById('appointmentForm').addEventListener('submit', function(event) {
+    event.preventDefault();
+
+    const appointmentDate = document.getElementById('appointmentDate').value;
+    const appointmentTime = document.getElementById('appointmentTime').value;
+
+    // Replace with your actual API call to create an appointment
+    console.log(`Appointment created for ${appointmentDate} at ${appointmentTime}`);
+    document.getElementById('appointmentSuccess').innerText = 'Appointment created successfully!';
+});
+
+// Handle logout
+document.getElementById('logoutButton').addEventListener('click', function() {
+    document.getElementById('dashboardView').style.display = 'none';
+    document.getElementById('loginView').style.display = 'block';
+});
+
+// Open tab function
+function openTab(evt, tabName) {
+    const tabcontent = document.getElementsByClassName('tabcontent');
+    const tablinks = document.getElementsByClassName('tablink');
+
+    // Hide all tab contents
+    for (let i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = 'none';
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Login'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _emailController,
-              decoration: InputDecoration(labelText: 'Email'),
-            ),
-            TextField(
-              controller: _passwordController,
-              decoration: InputDecoration(labelText: 'Password'),
-              obscureText: true,
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _login,
-              child: Text('Login'),
-            ),
-            SizedBox(height: 20),
-            Text(_errorMessage, style: TextStyle(color: Colors.red)),
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-
-
-
-This screen allows users to schedule an appointment with a doctor.
-
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
-
-class AppointmentScreen extends StatefulWidget {
-  @override
-  _AppointmentScreenState createState() => _AppointmentScreenState();
-}
-
-class _AppointmentScreenState extends State<AppointmentScreen> {
-  final _doctorIdController = TextEditingController();
-  final _datetimeController = TextEditingController();
-  final _descriptionController = TextEditingController();
-  String _message = '';
-
-  Future<void> _scheduleAppointment() async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/schedule_appointment'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'doctor_id': _doctorIdController.text,
-        'datetime': _datetimeController.text,
-        'description': _descriptionController.text,
-      }),
-    );
-
-    if (response.statusCode == 201) {
-      setState(() {
-        _message = 'Appointment scheduled successfully!';
-      });
-    } else {
-      setState(() {
-        _message = 'Failed to schedule appointment.';
-      });
+    // Remove active class from all tab links
+    for (let i = 0; i < tablinks.length; i++) {
+        tablinks[i].classList.remove('active');
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Schedule Appointment'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _doctorIdController,
-              decoration: InputDecoration(labelText: 'Doctor ID'),
-            ),
-            TextField(
-              controller: _datetimeController,
-              decoration: InputDecoration(labelText: 'Date & Time (YYYY-MM-DD HH:MM:SS)'),
-            ),
-            TextField(
-              controller: _descriptionController,
-              decoration: InputDecoration(labelText: 'Description'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _scheduleAppointment,
-              child: Text('Schedule Appointment'),
-            ),
-            SizedBox(height: 20),
-            Text(_message),
-          ],
-        ),
-      ),
-    );
-  }
+    // Show the current tab content and add an active class to the clicked tab link
+    document.getElementById(tabName).style.display = 'block';
+    evt.currentTarget.classList.add('active');
 }
 
 
+backend 
+sever.js
+const express = require('express');
+const cors = require('cors');
+const bodyParser = require('body-parser');
 
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+const app = express();
+const PORT = 3000;
 
-class MedicationReminderScreen extends StatefulWidget {
-  @override
-  _MedicationReminderScreenState createState() => _MedicationReminderScreenState();
-}
+// Sample user data (in a real application, this would come from a database)
+let users = [];
 
-class _MedicationReminderScreenState extends State<MedicationReminderScreen> {
-  final _medicationController = TextEditingController();
-  final _timeController = TextEditingController();
-  final _phoneController = TextEditingController();
-  String _message = '';
+// Middleware
+app.use(cors());
+app.use(bodyParser.json());
 
-  Future<void> _setReminder() async {
-    final response = await http.post(
-      Uri.parse('http://127.0.0.1:5000/medication_reminder'),
-      headers: {'Content-Type': 'application/json'},
-      body: jsonEncode({
-        'medication_name': _medicationController.text,
-        'time': _timeController.text,
-        'phone_number': _phoneController.text,
-      }),
-    );
+// Sign up route
+app.post('/signup', (req, res) => {
+    const { email, username, password } = req.body;
 
-    if (response.statusCode == 201) {
-      setState(() {
-        _message = 'Medication reminder set!';
-      });
-    } else {
-      setState(() {
-        _message = 'Failed to set reminder.';
-      });
+    // Check if the user already exists
+    const existingUser = users.find(u => u.username === username || u.email === email);
+    if (existingUser) {
+        return res.status(400).send('User already exists');
     }
-  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Set Medication Reminder'),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Column(
-          children: [
-            TextField(
-              controller: _medicationController,
-              decoration: InputDecoration(labelText: 'Medication Name'),
-            ),
-            TextField(
-              controller: _timeController,
-              decoration: InputDecoration(labelText: 'Reminder Time (HH:MM)'),
-            ),
-            TextField(
-              controller: _phoneController,
-              decoration: InputDecoration(labelText: 'Phone Number'),
-            ),
-            SizedBox(height: 20),
-            ElevatedButton(
-              onPressed: _setReminder,
-              child: Text('Set Reminder'),
-            ),
-            SizedBox(height: 20),
-            Text(_message),
-          ],
-        ),
-      ),
-    );
-  }
+    // Create a new user
+    users.push({ email, username, password });
+    res.status(201).send('User created successfully');
+});
+
+// Login route
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    const user = users.find(u => (u.username === username || u.email === username) && u.password === password);
+
+    if (user) {
+        res.status(200).send('Login successful');
+    } else {
+        res.status(401).send('Invalid credentials');
+    }
+});
+
+// Start the server
+app.listen(PORT, () => {
+    console.log(`Server running on http://localhost:${PORT}`);
+});
+
 }
+
+.tabcontent.active {
+    display: block;
+}
+
+@media (max-width: 768px) {
+    .container {
+        width: 100%;
+    }
+
+    .sidebar {
+        width: 100%;
+        border-right: none;
+    }
+}
+
+
+script.js
+
+
 
